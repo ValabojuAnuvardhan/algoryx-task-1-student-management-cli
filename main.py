@@ -1,7 +1,9 @@
-import json
-file_path = "data/student.json"
+from storage import load_students, save_students
+
 
 def add_student():
+    print("adding student...")
+
     name = input("Enter student name: ").strip()
 
     if not name:
@@ -10,7 +12,7 @@ def add_student():
 
     email = input("Enter student email: ").strip()
 
-    if "@gmail.com" not in email:
+    if "@" not in email or "." not in email:
         print("Invalid email address.")
         return
 
@@ -20,119 +22,160 @@ def add_student():
         print("Course cannot be empty.")
         return
 
-    try:
-        with open(file_path, "r") as file:
-            students = json.load(file)
+    students = load_students()
 
-        if students:
-            new_id = max(student["id"] for student in students) + 1
-        else:
-            new_id = 1
+    if students:
+        new_id = max(student["id"] for student in students) + 1
+    else:
+        new_id = 1
 
-        student = {
-            "id": new_id,
-            "name": name,
-            "email": email,
-            "course": course
-        }
+    student = {
+        "id": new_id,
+        "name": name,
+        "email": email,
+        "course": course
+    }
 
-        students.append(student)
+    students.append(student)
+    save_students(students)
 
-        with open(file_path, "w") as file:
-            json.dump(students, file, indent=4)
+    print(f"Student added successfully with ID: {new_id}")
 
-        print(f"Student added successfully with ID: {new_id}")
-
-    except FileNotFoundError:
-        print("Data file not found.")
-
-    except json.JSONDecodeError:
-        print("Data file contains invalid JSON.")
-
-    except Exception as e:
-        print(f"Unexpected error: {e}")
 
 def view_students():
-    with open(file_path,"r") as file:
-        students = json.load(file) 
+    print("viewing students...")
+
+    students = load_students()
+
     if not students:
         print("No students found.")
         return
-    print("....students list....")
-    for student in  students:
-        print(f"ID: {student['id']}, Name: {student['name']}, Email: {student['email']}, Course: {student['course']}")
 
-def search_student():
-    student_details = input("Enter student ID or name to search: ").strip().lower()
-    with open(file_path, "r") as file:
-        students = json.load(file)
+    print("\n" + "=" * 60)
+    print("                    STUDENT LIST")
+    print("=" * 60)
 
     for student in students:
-        if str(student["id"]) == student_details or student["name"].lower() == student_details:
-            print("Student found:")
-            print(f"ID: {student['id']}, Name: {student['name']}, Email: {student['email']}, Course: {student['course']}")
+        print(
+            f"ID: {student['id']} | "
+            f"Name: {student['name']} | "
+            f"Email: {student['email']} | "
+            f"Course: {student['course']}"
+        )
+
+    print("=" * 60)
+
+
+def search_student():
+    print("searching student...")
+
+    student_details = input(
+        "Enter student ID or name to search: "
+    ).strip().lower()
+
+    if not student_details:
+        print("Search value cannot be empty.")
+        return
+
+    students = load_students()
+
+    for student in students:
+        if (
+            str(student["id"]) == student_details
+            or student["name"].lower() == student_details
+        ):
+            print("\nStudent found:")
+            print(f"ID: {student['id']}")
+            print(f"Name: {student['name']}")
+            print(f"Email: {student['email']}")
+            print(f"Course: {student['course']}")
             return
 
     print("Student not found.")
 
 
 def update_student():
+    print("updating student...")
+
     try:
         student_id = int(input("Enter student ID to update: "))
+
     except ValueError:
         print("Invalid ID. Please enter a numeric value.")
         return
 
-    with open(file_path, "r") as file:
-        students = json.load(file)
+    students = load_students()
 
     for student in students:
+
         if student["id"] == student_id:
-            print(f"Current details: Name: {student['name']}, Email: {student['email']}, Course: {student['course']}")
-            name = input("Enter new name (leave blank to keep current): ").strip()
-            email = input("Enter new email (leave blank to keep current): ").strip()
-            course = input("Enter new course (leave blank to keep current): ").strip()
+
+            print("\nCurrent details:")
+            print(f"Name: {student['name']}")
+            print(f"Email: {student['email']}")
+            print(f"Course: {student['course']}")
+
+            name = input(
+                "Enter new name (leave blank to keep current): "
+            ).strip()
+
+            email = input(
+                "Enter new email (leave blank to keep current): "
+            ).strip()
+
+            course = input(
+                "Enter new course (leave blank to keep current): "
+            ).strip()
 
             if name:
-                student["name"] = name  
+                student["name"] = name
+
             if email:
                 if "@" not in email or "." not in email:
                     print("Invalid email address.")
                     return
+
                 student["email"] = email
+
             if course:
                 student["course"] = course
 
-            with open(file_path, "w") as file:
-                json.dump(students, file, indent=4)
+            save_students(students)
+
             print("Student details updated successfully.")
             return
 
     print("Student not found.")
 
+
 def delete_student():
+    print("deleting student...")
+
     try:
         student_id = int(input("Enter student ID to delete: "))
+
     except ValueError:
         print("Invalid ID. Please enter a numeric value.")
         return
 
-    with open(file_path, "r") as file:
-        students = json.load(file)
+    students = load_students()
 
     for student in students:
-        if student["id"] == student_id:
-            students.remove(student)
 
-            with open(file_path, "w") as file:
-                json.dump(students, file, indent=4)
+        if student["id"] == student_id:
+
+            students.remove(student)
+            save_students(students)
 
             print("Student deleted successfully.")
             return
 
     print("Student not found.")
 
+
 def show_menu():
+    """Display the main menu."""
+
     print("\n" + "=" * 40)
     print("       STUDENT MANAGEMENT SYSTEM")
     print("=" * 40)
@@ -146,14 +189,15 @@ def show_menu():
 
 
 def main():
+    """Run the Student Management System."""
+
     while True:
         show_menu()
 
-        choice = input("Enter your choice: ",)
+        choice = input("Enter your choice: ").strip()
 
         if choice == "1":
             add_student()
-
 
         elif choice == "2":
             view_students()
@@ -163,6 +207,7 @@ def main():
 
         elif choice == "4":
             update_student()
+
         elif choice == "5":
             delete_student()
 

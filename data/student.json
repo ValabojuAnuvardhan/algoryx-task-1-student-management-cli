@@ -6,9 +6,15 @@
         "course": "cse"
     },
     {
-        "id": 2,
-        "name": "ram",
-        "email": "ram@gmail.com",
+        "id": 3,
+        "name": "anu",
+        "email": "anu@gmail.com",
         "course": "cse"
+    },
+    {
+        "id": 4,
+        "name": "kali",
+        "email": "kali@gmail.com",
+        "course": "os"
     }
 ]
